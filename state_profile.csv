@@ -1,0 +1,17 @@
+State,Pop_2018,Pop_2023,Pop_Growth_Pct,Flood_Evacuees_2021,Flood_Hotspots,Growth_Outlier,Region
+Selangor,6475000,7209700,11.35,269,18,False,Central
+Johor,3749400,4107200,9.54,15974,46,False,South
+Sabah,3898400,3596700,-7.74,8670,41,False,East Malaysia
+Perak,2503500,2541200,1.51,1871,19,False,North
+Sarawak,2791700,2502300,-10.37,9041,120,False,East Malaysia
+Kedah,2163000,2189300,1.22,111,9,False,North
+W.P. Kuala Lumpur,1790000,2005700,12.05,0,4,False,Central
+Kelantan,1860500,1859800,-0.04,9951,9,False,East Coast
+Pulau Pinang,1762800,1772600,0.56,59,60,False,North
+Pahang,1664700,1643200,-1.29,44759,52,False,East Coast
+Negeri Sembilan,1122900,1224900,9.08,88,47,False,South
+Terengganu,1228300,1210000,-1.49,18452,2,False,East Coast
+Melaka,922400,1028300,11.48,825,13,False,South
+Perlis,253500,293100,15.62,0,7,False,North
+W.P. Putrajaya,97200,118800,22.22,0,2,False,Central
+W.P. Labuan,99000,99000,0.0,0,15,False,East Malaysia
