@@ -1,0 +1,3 @@
+Period,Display_Year,Flood_Evacuees,Source,Data_Level,Notes
+2021,2021,110070,JKM state-level flood evacuee dataset,Calendar-year state aggregation,Sum of the retained 2021 state-level records in the cleaned dashboard data.
+2022,2022,251799,NADMA official reporting,National annual figure,"NADMA reported 251,799 victims evacuated in 2022. This figure is contextual and is not directly comparable with the JKM state-level sum because source coverage and aggregation differ."

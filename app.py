@@ -181,7 +181,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 def load_data() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     state_path = os.path.join(HERE, "state_profile.csv")
     national_path = os.path.join(HERE, "national_trend.csv")
-    flood_path = os.path.join(HERE, "flood_impact_trend_2021_2023.csv")
+    flood_path = os.path.join(HERE, "flood_impact_comparison_2021_2022.csv")
+    legacy_flood_path = os.path.join(HERE, "flood_impact_trend_2021_2023.csv")
 
     if not os.path.exists(state_path):
         st.error("Missing file: state_profile.csv. Please place it in the same folder as app.py.")
@@ -195,17 +196,20 @@ def load_data() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
 
     if os.path.exists(flood_path):
         flood_trend = pd.read_csv(flood_path)
+    elif os.path.exists(legacy_flood_path):
+        # Backward compatibility for repositories using the earlier filename.
+        flood_trend = pd.read_csv(legacy_flood_path)
     else:
         # Safe fallback so the dashboard still runs during review.
         flood_trend = pd.DataFrame({
-            "Period": ["2021", "MTL 2022/2023"],
-            "Display_Year": [2021, 2023],
+            "Period": ["2021", "2022"],
+            "Display_Year": [2021, 2022],
             "Flood_Evacuees": [int(state["Flood_Evacuees_2021"].sum()), 251799],
-            "Source": ["JKM state-level flood evacuee dataset", "NADMA MTL impact report"],
-            "Data_Level": ["Calendar year", "Monsoon period"],
+            "Source": ["JKM state-level flood evacuee dataset", "NADMA official reporting"],
+            "Data_Level": ["Calendar-year state aggregation", "National annual figure"],
             "Notes": [
-                "State-level total from current cleaned dashboard data.",
-                "NADMA MTL 2022/2023 figure; use period wording, not calendar-year wording.",
+                "Sum of the retained 2021 state-level records in the cleaned dashboard data.",
+                "NADMA reported 251,799 victims evacuated in 2022. The figure is contextual and is not directly comparable with the JKM state-level sum because source coverage and aggregation differ.",
             ],
         })
 
@@ -341,10 +345,10 @@ st.markdown(
 <div class="main-banner">
     <div class="main-title">Malaysia SDG 11: Sustainable Cities and Communities</div>
     <div class="main-subtitle">
-        Interactive dashboard for monitoring Malaysia's urban population growth, air quality, flood impact, and hotspot exposure from 2018 to 2023.
+        Interactive dashboard for monitoring Malaysia's state population growth (used as a proxy for urbanisation pressure), air quality, flood impact, and hotspot exposure from 2018 to 2023.
     </div>
     <div class="small-note">
-        Sources: DOSM, JKM, JPS and NADMA | Focus: SDG 11 — inclusive, safe, resilient and sustainable cities.
+        Sources: DOSM, DOE, JKM, JPS and NADMA | Focus: SDG 11 — inclusive, safe, resilient and sustainable cities.
     </div>
 </div>
 """,
@@ -368,26 +372,27 @@ with k1:
 
 with k2:
     st.metric(
-        "Fastest urban-population growth",
+        "Fastest state population growth",
         str(fastest_row["State"]).replace("W.P. ", ""),
         f"{float(fastest_row['Pop_Growth_Pct']):+.1f}% from 2018–2023",
     )
     with st.popover("ℹ️ More info"):
         st.write(
-            "Putrajaya recorded the fastest population growth from 2018 to 2023. "
-            "This reflects rapid expansion in a planned administrative and smart-city area supported by public facilities, housing, transport connectivity and green-blue infrastructure."
+            "Putrajaya recorded the fastest overall state-level population growth from 2018 to 2023. "
+            "The increase may be associated with its planned federal administrative-city role, housing and public facilities, transport connectivity, and green-city planning. "
+            "Population growth is used here as a proxy for urbanisation pressure, not as a direct measure of the urban population share."
         )
 
 with k3:
     st.metric(
-        "Highest flood-impact period",
+        "Highest available flood-impact figure",
         f"{int(highest_flood['Flood_Evacuees']):,}",
         str(highest_flood["Period"]),
     )
     with st.popover("ℹ️ More info"):
         st.write(
-            "This KPI highlights the highest flood-impact period in the compiled flood data. "
-            "MTL 2022/2023 recorded 251,799 evacuees, so the dashboard uses 'period' because it is a monsoon period rather than a normal calendar year."
+            "This KPI highlights the largest official evacuation figure included in the compiled flood evidence. "
+            "NADMA reported 251,799 victims evacuated in 2022. This national figure is shown separately from the 2021 JKM state-level sum because the two sources use different coverage and aggregation methods."
         )
 
 with k4:
@@ -405,15 +410,15 @@ with k4:
 st.markdown(
     """
 <div class="insight-box">
-<b>Fastest-growing state explanation:</b> Putrajaya recorded the fastest urban-population growth from 2018 to 2023 at +22.2%. This growth is associated with its role as a planned administrative and smart city supported by public facilities, housing development, transport connectivity, and green-blue infrastructure, making it relevant to SDG 11 sustainable cities and communities.
+<b>Fastest population-growth explanation:</b> Putrajaya recorded the fastest overall state-level population growth from 2018 to 2023 at +22.2%. The increase may be associated with its planned federal administrative-city role, housing and public facilities, transport connectivity, and green-city planning. In this study, overall population growth is treated as a proxy for urbanisation pressure rather than a direct urban-population measure.
 </div>
 """,
     unsafe_allow_html=True,
 )
 
 st.caption(
-    "Flood-impact comparison uses JKM state-level evacuee data and NADMA MTL impact figures. "
-    "The dashboard uses the term 'period' because MTL 2022/2023 is a monsoon period, not a normal calendar-year total."
+    "Flood-impact comparison uses a 2021 JKM state-level sum and a NADMA-reported national evacuation figure for 2022. "
+    "The figures provide contextual evidence but should not be interpreted as a directly comparable time series because source coverage and aggregation differ."
 )
 
 # =============================================================================
@@ -434,7 +439,7 @@ with main_tabs[0]:
     st.subheader("Executive Overview")
     st.write(
         "This page summarises the main SDG 11 findings before users explore the detailed charts. "
-        "The indicators cover urban population growth, particulate air pollution, flood evacuees and flash-flood hotspot exposure."
+        "The indicators cover state population growth as a proxy for urbanisation pressure, particulate air pollution, flood evacuees, and flash-flood hotspot exposure."
     )
 
     c1, c2 = st.columns([1.2, 1])
@@ -457,7 +462,7 @@ with main_tabs[0]:
         st.info(
             "This chart ranks all Malaysian states and federal territories by population growth from 2018 to 2023. "
             "It is a fixed ranking based on the selected dataset, but the Plotly chart remains interactive through hover labels, zooming, and export tools. "
-            "W.P. Putrajaya recorded the highest growth at +22.2%, while Sabah and Sarawak show apparent declines that should be interpreted carefully due to the 2020 census rebasing effect."
+            "W.P. Putrajaya recorded the highest overall state-level population growth at +22.2%, while Sabah and Sarawak show apparent declines that should be interpreted carefully because the series includes the 2020 census rebasing effect."
         )
     with c2:
         st.markdown("#### Selected State / Territory Snapshot")
@@ -481,7 +486,7 @@ with main_tabs[0]:
     st.markdown(
         """
 <div class="insight-box">
-<b>Dashboard reading guide:</b> High population growth highlights expanding urban areas, while high flood evacuees and hotspot counts indicate disaster-resilience pressure. SDG 11 planning should consider both dimensions together so growing cities remain safe, inclusive and sustainable.
+<b>Dashboard reading guide:</b> Higher state population growth indicates increasing development and service pressure, while high flood-evacuee and hotspot counts indicate disaster-resilience pressure. Population growth is used as a proxy for urbanisation pressure, so SDG 11 planning should interpret it alongside environmental and resilience indicators.
 </div>
 """,
         unsafe_allow_html=True,
@@ -591,8 +596,8 @@ with main_tabs[1]:
             fig.update_xaxes(dtick=1)
             st.plotly_chart(fig, use_container_width=True)
         st.info(
-            "PM2.5 fell sharply in 2020 mainly due to reduced transport, industrial activity, construction, and urban movement during the COVID-19 Movement Control Order. "
-            "However, the improvement was temporary and PM2.5 still remained above the WHO annual guideline, showing that long-term air-quality action is still needed."
+            "PM2.5 fell sharply in 2020, coinciding with reduced transport, industrial activity, construction, and urban movement during the COVID-19 Movement Control Order, and remained at a lower level through 2022. "
+            "Nevertheless, every observed annual value remained above the WHO annual guideline, showing that sustained long-term air-quality action is still needed."
         )
 
     # Flood Impact & Hotspots
@@ -639,31 +644,31 @@ with main_tabs[1]:
             "The comparison helps identify states that require evacuation preparedness, drainage improvement, and targeted disaster-risk planning."
         )
 
-        st.markdown("#### Supporting indicator — highest flood-impact period")
+        st.markdown("#### Supporting indicator — available flood-impact figures")
         trend = flood_trend.sort_values("Display_Year")
         trend_fig = px.bar(
             trend,
             x="Period",
             y="Flood_Evacuees",
             text=trend["Flood_Evacuees"].map(lambda x: f"{int(x):,}"),
-            labels={"Period": "Year / period", "Flood_Evacuees": "Flood evacuees"},
-            title="Flood Evacuees by Available Year/Period",
+            labels={"Period": "Year", "Flood_Evacuees": "Flood evacuees / victims evacuated"},
+            title="Available Official Flood-Impact Figures, 2021 and 2022",
         )
         trend_fig.update_traces(
-            hovertemplate="Year / period: %{x}<br>Flood evacuees: %{y:,}<extra></extra>"
+            hovertemplate="Year: %{x}<br>Flood evacuees / victims evacuated: %{y:,}<extra></extra>"
         )
         trend_fig.update_traces(textposition="outside", marker_color=AMBER)
         trend_fig.update_layout(**PLOTLY_LAYOUT, height=430, yaxis_tickformat=",")
         st.plotly_chart(trend_fig, use_container_width=True)
         st.caption(
-            "The highest value in the compiled flood-impact data is MTL 2022/2023 with 251,799 evacuees. "
-            "This makes the flood KPI more significant than showing only the 2021 state-level total of 110,070 evacuees."
+            "The largest available official figure is 251,799 victims evacuated in 2022, as reported by NADMA. "
+            "It provides broader national context than the 2021 JKM state-level sum of 110,070, but the two values come from different official sources and should not be treated as a directly comparable annual trend."
         )
 
     # Urban Population Growth
     with viz_tabs[3]:
-        st.subheader("Urban Population Growth and Flood Hotspot Exposure")
-        st.markdown("**What this shows:** This bubble chart compares each state’s population growth with its flood-hotspot exposure; bubble size represents 2023 population and colour represents region.")
+        st.subheader("Population Growth and Flood Hotspot Exposure")
+        st.markdown("**What this shows:** This bubble chart compares each state or federal territory’s overall population growth with its flood-hotspot exposure; bubble size represents 2023 population and colour represents region. Overall population growth is used as a proxy for urbanisation pressure.")
         fig = px.scatter(
             fstate,
             x="Flood_Hotspots",
@@ -674,7 +679,7 @@ with main_tabs[1]:
             size_max=55,
             hover_name="State",
             text="State" if show_state_labels else None,
-            title="Urban Population Growth and Flood Hotspot Exposure",
+            title="Population Growth and Flood Hotspot Exposure",
             custom_data=["Region", "Flood_Hotspots", "Pop_Growth_Pct", "Pop_2023"],
             labels={
                 "Flood_Hotspots": "Active flash-flood hotspots",
@@ -740,7 +745,7 @@ with main_tabs[1]:
         )
         st.plotly_chart(fig, use_container_width=True)
         st.info(
-            "This visualisation shows how each state’s urban population growth from 2018 to 2023 relates to its number of active flash-flood hotspots. "
+            "This visualisation shows how each state or federal territory’s overall population growth from 2018 to 2023 relates to its number of active flash-flood hotspots. "
             "The bubble size represents the 2023 population, helping to identify whether larger or faster-growing urban areas are exposed to higher flood-risk locations."
         )
         if show_trendline:
@@ -770,7 +775,7 @@ with main_tabs[2]:
             "Interpretation": "Shows the overall urban-planning population base.",
         },
         {
-            "Indicator": "Mean state population 2023",
+            "Indicator": "Mean population across 16 state-level areas, 2023",
             "Summary value": f"{state['Pop_2023'].mean()/1e6:.2f} million",
             "Interpretation": "Population is unevenly distributed across states and territories.",
         },
@@ -780,14 +785,14 @@ with main_tabs[2]:
             "Interpretation": "Growth is uneven, with Putrajaya recording the fastest increase.",
         },
         {
-            "Indicator": "Fastest urban-population growth",
+            "Indicator": "Fastest state population growth",
             "Summary value": f"{fastest_row['State']} ({float(fastest_row['Pop_Growth_Pct']):+.1f}%)",
             "Interpretation": "Highlights the strongest state-level population expansion in the dataset.",
         },
         {
-            "Indicator": "Highest flood-impact period",
+            "Indicator": "Highest available flood-impact figure",
             "Summary value": f"{highest_flood['Period']} ({int(highest_flood['Flood_Evacuees']):,} evacuees)",
-            "Interpretation": "Represents the most significant flood-impact period in the compiled flood data.",
+            "Interpretation": "Shows the largest official evacuation figure in the compiled evidence; source coverage differs from the 2021 JKM state-level sum.",
         },
         {
             "Indicator": "Highest 2021 state flood evacuees",
@@ -850,11 +855,11 @@ with main_tabs[3]:
     st.write("These concise findings are written for quick lecturer review. The detailed interpretation can remain in the full report.")
 
     insights = [
-        ("1. Klang Valley and planned-city growth", "Putrajaya, Kuala Lumpur and Selangor show strong urban-population growth, indicating concentrated development pressure in the central corridor."),
-        ("2. Putrajaya as the fastest-growing state/federal territory", "Putrajaya recorded +22.2% population growth from 2018 to 2023, likely supported by its planned administrative-city role, public services, housing, transport connectivity and green-blue infrastructure."),
-        ("3. PM2.5 improvement in 2020", "PM2.5 fell sharply in 2020 mainly because COVID-19 MCO reduced transport, industrial activity, construction and general urban movement."),
-        ("4. Flood impact and hotspots represent different risks", "Flood evacuees show actual human displacement, while hotspots show recurring flood-risk locations, so both are needed for disaster-resilience planning."),
-        ("5. Highest flood-impact period", "The compiled flood data shows MTL 2022/2023 as the highest flood-impact period with 251,799 evacuees, making it more significant than the earlier 2021-only KPI."),
+        ("1. Concentrated population growth", "Putrajaya, Kuala Lumpur, Selangor and several northern and southern areas show comparatively strong state population growth, indicating concentrated development and service pressure."),
+        ("2. Putrajaya recorded the fastest state population growth", "Putrajaya recorded +22.2% overall population growth from 2018 to 2023. The increase may be associated with its planned federal administrative-city role and green-city planning; the dataset does not establish causation."),
+        ("3. PM2.5 fell sharply and remained lower", "PM2.5 fell by about 40% in 2020, coinciding with reduced movement and activity during the MCO, and remained at a lower level through 2022; however, all observed annual values exceeded the WHO guideline."),
+        ("4. Flood impact and hotspots represent different risks", "Flood evacuees show actual human displacement during recorded events, while hotspots show recurring structural exposure, so both indicators are needed for disaster-resilience planning."),
+        ("5. Largest available official evacuation figure", "NADMA reported 251,799 victims evacuated in 2022. This provides national context but is not directly comparable with the 2021 JKM state-level sum because source coverage and aggregation differ."),
     ]
     for title, body in insights:
         st.markdown(f"""
@@ -867,7 +872,7 @@ with main_tabs[3]:
 with main_tabs[4]:
     st.subheader("Data & Evidence")
     st.write(
-        "This section provides transparent access to the cleaned data behind the dashboard. "
+        "This section provides transparent access to the cleaned data and contextual flood evidence behind the dashboard. "
         "It supports the final assessment requirement for dataset exploration, dashboard evidence and reproducibility."
     )
 
@@ -904,7 +909,7 @@ with main_tabs[4]:
 
     with st.expander("🌊 View Flood-Impact Period Data Source"):
         flood_display = flood_trend.rename(columns={
-            "Period": "Year / period",
+            "Period": "Year",
             "Display_Year": "Display year",
             "Flood_Evacuees": "Flood evacuees",
             "Source": "Data source",
