@@ -1,0 +1,3 @@
+Period,Display_Year,Flood_Evacuees,Source,Data_Level,Notes
+2021,2021,110070,JKM state-level flood evacuee dataset,Calendar year,"State-level total from current cleaned dashboard data; original JKM source covers 2019-2021."
+MTL 2022/2023,2023,251799,NADMA MTL impact report,Monsoon period,"NADMA reports 251,799 victims/evacuees for MTL 2022/2023; use period wording, not calendar-year wording."
